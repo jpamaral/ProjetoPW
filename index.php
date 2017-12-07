@@ -1,24 +1,110 @@
+<?php 
+require "modelo.php";
+require "connect.php";
 
-<?php
-include "modelo.php";
+###################
+if($tipo == 'F'){
+	header ("location: T10.php");
+	}
 
+if (isset($_GET['ordem'])) {
+    $ordem=" ORDER BY " . $_GET['ordem'];
+}else {
+    $ordem="";
+}
+
+if (isset($_GET['nome'])) {
+   setcookie('aux',$_GET['nome'], time() + 30);
+}else{
+$pnome="";
+}
+
+if (isset($_COOKIE['aux'])){
+    if (empty($_COOKIE['aux'])){
+        $pnome="";
+    }else {
+        $pnome="&nome=" . $_COOKIE['aux'];
+}
+}else {
+    $pnome="";
+}
+#####################
 ?>
-<br>
-<hr>
-<div>
-<h1>Titulo</h1>
-<hr>
-<p>"Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."
-"Não há ninguém que ame a dor por si só, que a busque e queira tê-la, simplesmente por ser dor..."
+   <div style="margin-left:33%;padding:70px 0">
+        <div class="logo">Movimentações de Bens Patrimoniais Pendentes</div>
+        <!-- Main Form -->
+         <div class="login-form-1">
+        </div>
+    </div> 
+    <div class='table-responsive col-md-12'>
+        <table class='table table-striped'>
+            <thead>
+                <tr>
+		<?php
+	echo "<th><a href='index.php?ordem=num{$pnome}'>Código</a></th>";
+	 echo "<th><a href='index.php?ordem=datasolicitacao{$pnome}'>Data Solicitação</a></th>";
+		echo "<th><a href='index.php?ordem=bem{$pnome}'>Bem</a></th>";
+		echo "<th><a href='index.php?ordem=motivo{$pnome}'>Motivo</a></th>";
+		echo "<th><a href='index.php?ordem=user{$pnome}'>Solicitante</a></th>";
+		echo "<th><a href='index.php?ordem=numsalaorigem{$pnome}'>Sala Origem</a></th>";
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vitae est libero. Aliquam semper est vitae nunc dictum, sit amet elementum mauris pharetra. Nulla luctus ornare lorem, nec lacinia nulla. Integer lobortis convallis varius. Vivamus at efficitur mauris, vitae suscipit augue. Nunc feugiat luctus ligula malesuada faucibus. Pellentesque sit amet arcu ipsum. Ut efficitur porttitor enim, ut posuere mi maximus sit amet. Etiam arcu magna, aliquam sit amet auctor eu, eleifend nec metus.
+		echo "<th><a href='index.php?ordem=numsaladestino{$pnome}'>Sala Destino</a></th>";
+	      ?>
+                    <th class='actions text-center'>Autorizada</th>
+                    <th class='actions text-center'>Negada</th>
+                </tr>
+            </thead>
+    </div>
+	<tbody>
+	
+            <?php
+	$LOGIN = $_SESSION['login'];
 
-Cras leo orci, dignissim ut eros non, lacinia sodales libero. Sed sed ligula rhoncus, aliquam ante eget, faucibus est. Sed tortor arcu, rhoncus eget mi ut, congue scelerisque mi. Aenean orci sem, hendrerit ut maximus vel, cursus et libero. Quisque eget tortor venenatis mi posuere fringilla. Ut molestie et dolor vitae luctus. Nunc interdum, purus ut hendrerit euismod, ex odio convallis eros, ac scelerisque mi mauris ut neque. Phasellus sit amet tempor risus. Duis eget tincidunt velit. Donec scelerisque vel mauris sit amet pellentesque.
+	$sql2 = $con->query("select id, sigla from usuario where login = '$LOGIN'");
+	$row = $sql2->fetch(PDO::FETCH_OBJ);
+	$usuario = $row->id;
+	$sig = $row->sigla;
 
-Proin finibus ultrices tristique. Donec blandit pellentesque quam, vel laoreet sapien. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sit amet neque commodo enim blandit fringilla. Ut sed massa vitae mauris luctus aliquet quis viverra arcu. Donec et ipsum vel justo tempor dictum. Sed et dui accumsan, aliquet enim a, porttitor nunc.
 
-Sed vestibulum nisl diam, eget posuere odio mattis in. Proin rutrum imperdiet neque id ultricies. Maecenas mollis ac ex id accumsan. In vel sapien sit amet libero hendrerit aliquet. Curabitur tortor sem, faucibus non sollicitudin vel, elementum at ligula. Pellentesque rhoncus erat vel nisi pretium porttitor. Vestibulum viverra massa non arcu hendrerit, in ornare nisi accumsan. Sed faucibus et arcu vitae hendrerit.
+	    $pat= $con->prepare("select m.numero as num, m.datasolicitacao as datas, b.numero as bem, b.descricao as desc, m.motivo as mot, u.nome as  user, m.numsalaorigem as salao, s.sigladpto as dep, m.numsaladestino as salad from mbp m inner join usuario u on m.idsolicitante = u.id inner join bempatrimonial b on b.numero = m.numerobem inner join sala s on s.numero = m.numsalaorigem where m.idautorizador is null $ordem ");
+ #CHEFE DEPARTAMENTO - lista apenas mbp´s que saiam do seu DP;           
+	    $dep= $con->prepare("select m.numero as num, m.datasolicitacao as datas, b.numero as bem, b.descricao as desc, m.motivo as mot, u.nome as  user, m.numsalaorigem as salao, s.sigladpto as dep, m.numsaladestino as salad from mbp m inner join sala s on s.numero = m.numsalaorigem inner join departamento d on d.sigla = s.sigladpto inner join usuario u on u.id = m.idsolicitante inner join bempatrimonial b on b.numero = m.numerobem  where m.idautorizador is null and d.sigla = '$sig' $ordem");
 
-Vivamus tempus metus a ex semper semper. Fusce ac mi accumsan mauris tempor congue. Nullam condimentum felis non lectus rhoncus maximus. Mauris vehicula purus elit, nec aliquet augue tristique quis. Praesent ligula ante, pharetra non ipsum vel, efficitur sollicitudin sapien. Pellentesque posuere consequat vestibulum. Praesent quis cursus urna. Etiam vehicula orci ut bibendum laoreet. Nunc dolor orci, luctus sed dui a, molestie lobortis libero. Etiam ac ornare velit, et malesuada neque. Curabitur vestibulum dui mi, luctus semper est pretium nec. Maecenas eu consequat neque. Curabitur laoreet, metus eu lacinia iaculis, lorem elit finibus metus, nec auctor turpis ipsum non nisl. Praesent ultrices vestibulum mollis.</p>
-</div>
-<hr>
+	if($tipo == 'P'){
+	$sql = $pat;
+	}else{
+	$sql = $dep;
+	}	
+	    $sql->execute();
+            $total = $sql->rowCount();
+            while ($row = $sql->fetchObject()) {
+                echo "<tr>";
+		echo "<td><b>{$row->num}</b></td>";
+                echo "<td><b>{$row->datas}</b></td>";
+                echo "<td><b>{$row->bem}-{$row->desc}</b></td>";
+                echo "<td><b>{$row->mot}</b></td>";
+                echo "<td><b>{$row->user}</b></td>";
+                echo "<td><b>{$row->salao}-{$row->dep}</b></td>";
+                echo "<td><b>{$row->salad}</b></td>";
+		$num=$row->num;
+                echo "<td>
+		<a href='T08aut.php?numero=$num'>
+		<input type='button' name='insert' value='Autorizar' />
+		</a></td>
+		<td>
+		<a href='T08nao.php?numero=$num'>
+                <input type='button' name='insert' value='Negar'/>
+                </a></td>";
+	        echo "</tr>";
+            
+        }
+            ?>
+    </tbody>
+    </table>
+    </div>
+    <div class="etc-login-form">
+        <a href="index.php">Voltar</a>        
+    </div>
+    <!-- end:Main Form -->
+</body>
+</html>

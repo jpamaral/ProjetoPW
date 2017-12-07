@@ -1,5 +1,7 @@
 <?php
-echo "Obrigado, você foi deslogado";
+require "verifica.php";
+setcookie("name","",0);
+session_destroy();
 header ("location: login.html");
 ?>
 
